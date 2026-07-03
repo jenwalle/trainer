@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Makes the app size correctly on a phone screen and disables pinch-zoom
+       so double-taps during a workout don't accidentally zoom the page. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0f1115" />
+  <title>Trainer</title>
+
+  <!-- Tells the phone this can behave like an installed app (full screen). -->
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="icons/icon.svg" />
+
+  <!-- Our styles (the "look" of the app). -->
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <!--
+    The whole app lives inside this one page. We have several "screens"
+    (Home, Workout, History, Settings) and we just show one at a time by
+    adding/removing a CSS class. This is the simplest form of what real
+    apps call a "single-page app."
+  -->
+
+  <!-- ===================== HOME SCREEN ===================== -->
+  <section id="screen-home" class="screen is-active">
+    <header class="app-header">
+      <h1 class="app-title">Trainer</h1>
+      <button class="icon-btn" data-goto="settings" aria-label="Settings">⚙️</button>
+    </header>
+
+    <p class="subtle">Pick a training day to begin.</p>
+
+    <!-- The list of training days gets filled in by JavaScript. -->
+    <div id="day-list" class="card-list"></div>
+
+    <button class="ghost-btn wide" data-goto="history">📖 View workout history</button>
+  </section>
+
+  <!-- ===================== WORKOUT (RUNNER) SCREEN ===================== -->
+  <section id="screen-run" class="screen">
+    <header class="app-header">
+      <button class="icon-btn" id="run-quit" aria-label="Quit workout">✕</button>
+      <h2 id="run-day-name" class="app-title">Workout</h2>
+      <div class="run-clock" id="run-total-clock">00:00</div>
+    </header>
+
+    <!-- Tap to jump to any part of the workout (no numeric counter). -->
+    <button class="jump-btn" id="btn-jump">☰ Steps — tap to jump</button>
+
+    <!-- The big central card: what you're doing right now. -->
+    <div class="stage" id="run-stage">
+      <div class="section-chip" id="run-section"></div>
+      <div class="phase-label" id="run-phase">Get ready</div>
+      <div class="exercise-name" id="run-exercise">—</div>
+      <div class="set-line" id="run-set">—</div>
+
+      <!-- A demo photo of the movement (shown when we have one). -->
+      <img id="run-demo" class="demo-img hidden" alt="" />
+
+      <!-- The giant countdown / status number. -->
+      <div class="big-timer" id="run-timer">00:00</div>
+
+      <div class="target-line" id="run-target"></div>
+      <div class="notes-line" id="run-notes"></div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <button class="ctrl-btn secondary" id="btn-prev">⏮ Prev</button>
+      <button class="ctrl-btn primary" id="btn-main">Start</button>
+      <button class="ctrl-btn secondary" id="btn-skip">Skip ⏭</button>
+    </div>
+    <div class="secondary-controls">
+      <button class="ghost-btn" id="btn-pause">⏸ Pause</button>
+      <button class="ghost-btn" id="btn-add">＋30s rest</button>
+    </div>
+
+    <button class="ghost-btn wide" id="btn-reminder">ℹ️ Need a reminder</button>
+    <div class="reminder-panel hidden" id="reminder-panel"></div>
+
+    <!-- "Up next" preview so you know what's coming. -->
+    <p class="subtle up-next" id="run-upnext"></p>
+
+    <!-- Step selector overlay (jump to a different part of the workout). -->
+    <div class="overlay hidden" id="jump-overlay">
+      <div class="overlay-panel">
+        <div class="overlay-head">
+          <span class="overlay-title">Jump to a step</span>
+          <button class="icon-btn" id="jump-close" aria-label="Close">✕</button>
+        </div>
+        <div id="jump-list" class="jump-list"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== HISTORY SCREEN ===================== -->
+  <section id="screen-history" class="screen">
+    <header class="app-header">
+      <button class="icon-btn" data-goto="home" aria-label="Back">←</button>
+      <h2 class="app-title">History</h2>
+      <span style="width:44px"></span>
+    </header>
+    <div id="history-list" class="card-list"></div>
+  </section>
+
+  <!-- ===================== SETTINGS SCREEN ===================== -->
+  <section id="screen-settings" class="screen">
+    <header class="app-header">
+      <button class="icon-btn" data-goto="home" aria-label="Back">←</button>
+      <h2 class="app-title">Settings</h2>
+      <span style="width:44px"></span>
+    </header>
+
+    <div class="setting-row">
+      <div>
+        <div class="setting-name">Sound</div>
+        <div class="subtle">Beep when a timer or rest period ends.</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="set-sound" />
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="setting-row">
+      <div>
+        <div class="setting-name">Vibration</div>
+        <div class="subtle">Buzz when a timer or rest period ends.</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="set-vibe" />
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="setting-row">
+      <div>
+        <div class="setting-name">Keep screen awake</div>
+        <div class="subtle">Stop the screen dimming during a workout.</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="set-wake" />
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <button class="ghost-btn wide" id="btn-test-cue">🔔 Test sound &amp; vibration</button>
+  </section>
+
+  <!--
+    JavaScript files. They load top-to-bottom, and each one can use things
+    defined in the ones above it. We keep them as separate simple files so
+    the app runs by just opening this HTML file (no build tools needed).
+  -->
+  <script src="js/data.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

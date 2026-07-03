@@ -1,0 +1,211 @@
+/* =========================================================================
+   styles.css  —  How the app looks
+   =========================================================================
+   Design goals for a GYM app:
+     - dark background (less glare, saves battery on OLED phones)
+     - very large touch targets (you're sweaty and moving)
+     - one huge countdown number you can read from across the room
+   ========================================================================= */
+
+/* CSS "variables": set a color once here, use it everywhere below. */
+:root {
+  --bg:        #0f1115;   /* page background */
+  --card:      #1a1e26;   /* panels / cards */
+  --card-2:    #232935;
+  --text:      #f2f4f8;
+  --muted:     #9aa4b2;   /* dimmed secondary text */
+  --accent:    #4f7cff;   /* primary blue */
+  --work:      #2fbf71;   /* green = work */
+  --rest:      #f5a524;   /* amber = rest */
+  --done:      #4f7cff;
+  --danger:    #ff5d5d;
+  --radius:    16px;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  /* Respect the phone's notch / rounded corners. */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+           env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+/* ---------- Screens: only the .is-active one is shown ---------- */
+.screen { display: none; padding: 16px 16px 40px; max-width: 560px; margin: 0 auto; min-height: 100vh; }
+.screen.is-active { display: block; }
+.hidden { display: none !important; }
+
+/* ---------- Header ---------- */
+.app-header {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; margin-bottom: 12px;
+}
+.app-title { font-size: 22px; font-weight: 700; margin: 0; }
+.icon-btn {
+  background: var(--card); color: var(--text); border: none;
+  width: 44px; height: 44px; border-radius: 12px; font-size: 20px; cursor: pointer;
+}
+.run-clock { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 18px; min-width: 60px; text-align: right; }
+
+.subtle { color: var(--muted); font-size: 14px; line-height: 1.4; }
+
+/* ---------- Home: day cards ---------- */
+.card-list { display: flex; flex-direction: column; gap: 12px; margin: 16px 0; }
+
+.day-card {
+  text-align: left; width: 100%; background: var(--card); color: var(--text);
+  border: 1px solid var(--card-2); border-radius: var(--radius);
+  padding: 18px; cursor: pointer;
+}
+.day-card:active { transform: scale(0.99); }
+.day-card-name { font-size: 18px; font-weight: 600; }
+.day-card-meta { color: var(--muted); font-size: 14px; margin-top: 4px; }
+
+.ghost-btn {
+  background: transparent; color: var(--muted); border: 1px solid var(--card-2);
+  border-radius: 12px; padding: 14px; font-size: 15px; cursor: pointer;
+}
+.ghost-btn.wide { width: 100%; margin-top: 8px; }
+
+/* ---------- Runner stage (the big central card) ---------- */
+.stage {
+  background: var(--card); border-radius: 20px; padding: 28px 20px;
+  text-align: center; margin: 8px 0 20px;
+  border-top: 6px solid var(--card-2); transition: border-color .2s;
+}
+.stage.is-work { border-top-color: var(--work); }
+.stage.is-rest { border-top-color: var(--rest); }
+.stage.is-done { border-top-color: var(--done); }
+
+.section-chip {
+  display: inline-block; text-transform: uppercase; letter-spacing: 1.5px;
+  font-size: 11px; font-weight: 700; color: var(--muted);
+  background: var(--card-2); border-radius: 20px; padding: 4px 12px; margin-bottom: 10px;
+}
+.phase-label { text-transform: uppercase; letter-spacing: 2px; font-size: 14px; color: var(--muted); font-weight: 700; }
+.stage.is-work .phase-label { color: var(--work); }
+.stage.is-rest .phase-label { color: var(--rest); }
+
+.exercise-name { font-size: 26px; font-weight: 700; margin: 8px 0 2px; }
+.set-line { color: var(--muted); font-size: 16px; min-height: 20px; }
+
+.big-timer {
+  font-size: 72px; font-weight: 800; line-height: 1.1; margin: 12px 0;
+  font-variant-numeric: tabular-nums;
+}
+.stage.is-work .big-timer { color: var(--work); }
+.stage.is-rest .big-timer { color: var(--rest); }
+.big-timer.over { color: var(--danger) !important; }   /* past target time */
+
+/* Reps layout: make the exercise NAME the hero, the rep count secondary. */
+.stage.is-reps .exercise-name { font-size: 34px; margin-top: 4px; }
+.stage.is-reps .big-timer { font-size: 32px; font-weight: 700; }
+
+.demo-img {
+  display: block; max-width: 200px; max-height: 150px; width: auto; margin: 12px auto 4px;
+  border-radius: 12px; object-fit: cover; background: var(--card-2);
+}
+.reminder-img { display: block; max-width: 100%; border-radius: 12px; margin: 8px 0 10px; }
+.target-line { font-size: 18px; margin-top: 4px; }
+.notes-line { color: var(--muted); font-size: 15px; margin-top: 10px; line-height: 1.4; }
+
+/* ---------- Controls ---------- */
+.controls { display: grid; grid-template-columns: 1fr 1.4fr 1fr; gap: 10px; }
+.ctrl-btn {
+  border: none; border-radius: 14px; padding: 18px 10px; font-size: 16px;
+  font-weight: 700; cursor: pointer; color: var(--text);
+}
+.ctrl-btn.primary { background: var(--accent); }
+.ctrl-btn.primary.muted { background: var(--card-2); color: var(--muted); }
+.ctrl-btn.secondary { background: var(--card); }
+.ctrl-btn:disabled { opacity: .45; cursor: default; }
+.ctrl-btn:active:not(:disabled) { transform: scale(0.98); }
+
+.secondary-controls { display: flex; gap: 10px; margin-top: 12px; }
+.secondary-controls .ghost-btn { flex: 1; font-size: 16px; padding: 16px; }
+#btn-reminder { margin-top: 10px; }
+.up-next { text-align: center; margin-top: 16px; }
+
+/* Jump-to-step button + selector overlay */
+.jump-btn {
+  display: block; margin: 0 auto 8px; background: transparent; border: none;
+  color: var(--muted); font-size: 13px; cursor: pointer; padding: 6px 10px;
+}
+.jump-btn:active { color: var(--text); }
+.overlay {
+  position: fixed; inset: 0; z-index: 50; background: rgba(0, 0, 0, 0.6);
+  display: flex; align-items: flex-end; justify-content: center;
+}
+.overlay-panel {
+  background: var(--card); width: 100%; max-width: 560px; max-height: 82vh;
+  border-radius: 20px 20px 0 0; display: flex; flex-direction: column; overflow: hidden;
+}
+.overlay-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px; border-bottom: 1px solid var(--card-2);
+}
+.overlay-title { font-weight: 700; font-size: 17px; }
+.jump-list { overflow-y: auto; padding: 8px 12px 28px; }
+.jump-section {
+  text-transform: uppercase; letter-spacing: 1.5px; font-size: 11px;
+  font-weight: 700; color: var(--muted); margin: 14px 4px 6px;
+}
+.jump-item {
+  display: block; width: 100%; text-align: left; background: var(--card-2);
+  border: none; color: var(--text); border-radius: 12px; padding: 14px;
+  font-size: 16px; margin-bottom: 8px; cursor: pointer;
+}
+.jump-item.current { outline: 2px solid var(--accent); }
+.jump-name { font-weight: 600; }
+
+/* Weight input inside the stage */
+.weight-input {
+  width: 130px; font-size: 18px; font-weight: 700; text-align: center;
+  color: var(--text); background: var(--card-2); border: 1px solid #384154;
+  border-radius: 10px; padding: 8px 10px; font-family: inherit;
+}
+.weight-input:focus { outline: none; border-color: var(--accent); }
+
+/* Reminder panel */
+.reminder-panel {
+  background: var(--card); border: 1px solid var(--card-2); border-radius: var(--radius);
+  padding: 16px; margin-top: 10px; text-align: left;
+}
+.reminder-title { font-weight: 700; font-size: 17px; margin-bottom: 6px; }
+.reminder-desc { color: var(--text); font-size: 15px; line-height: 1.45; margin-bottom: 8px; }
+.reminder-cues { color: var(--muted); font-size: 14px; line-height: 1.45; margin-bottom: 12px; }
+.reminder-link {
+  display: inline-block; color: var(--accent); text-decoration: none; font-weight: 600;
+  font-size: 15px; padding: 8px 0;
+}
+
+/* ---------- History ---------- */
+.history-card { background: var(--card); border-radius: var(--radius); padding: 16px; }
+.history-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
+.history-day { font-weight: 600; font-size: 16px; }
+.history-dur { color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* ---------- Settings ---------- */
+.setting-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  background: var(--card); border-radius: var(--radius); padding: 16px; margin-bottom: 12px;
+}
+.setting-name { font-size: 17px; font-weight: 600; margin-bottom: 2px; }
+
+/* The on/off switch */
+.switch { position: relative; display: inline-block; width: 56px; height: 32px; flex: none; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider {
+  position: absolute; inset: 0; background: var(--card-2); border-radius: 32px;
+  transition: .2s; cursor: pointer;
+}
+.slider::before {
+  content: ""; position: absolute; height: 24px; width: 24px; left: 4px; top: 4px;
+  background: #fff; border-radius: 50%; transition: .2s;
+}
+.switch input:checked + .slider { background: var(--work); }
+.switch input:checked + .slider::before { transform: translateX(24px); }
