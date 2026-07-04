@@ -47,19 +47,19 @@ function buildSteps(day) {
   // Emit the work step(s) for one exercise. If it's a TIMED "each side"
   // exercise, split it into a Right timer then a Left timer.
   function emitExerciseWork(ex, section, blockName, roundInfo) {
+    const timed = ex.mode === "time";
     const base = {
       section: section, blockName: blockName || "", mode: ex.mode,
       reps: ex.reps || "", weight: ex.weight || "", notes: ex.notes || "",
-      image: ex.image || "", roundInfo: roundInfo
+      howto: ex.howto || "", image: ex.image || "", roundInfo: roundInfo,
+      timed: timed, seconds: timed ? ex.work : 0
     };
-    if (ex.perSide && ex.mode === "time") {
-      work(Object.assign({}, base, { name: ex.name + " — Right", timed: true, seconds: ex.work }));
-      work(Object.assign({}, base, { name: ex.name + " — Left", timed: true, seconds: ex.work }));
+    if (ex.perSide) {
+      // The app runs each side for you: Right, then Left (no "2R 2L" jargon).
+      work(Object.assign({}, base, { name: ex.name + " — Right" }));
+      work(Object.assign({}, base, { name: ex.name + " — Left" }));
     } else {
-      work(Object.assign({}, base, {
-        name: ex.name, timed: ex.mode === "time",
-        seconds: ex.mode === "time" ? ex.work : 0
-      }));
+      work(Object.assign({}, base, { name: ex.name }));
     }
   }
 
@@ -72,7 +72,7 @@ function buildSteps(day) {
         section: section, name: block.name, mode: "time",
         timed: true, seconds: block.work,
         weight: block.weight || "", notes: block.notes || "",
-        image: block.image || "", roundInfo: block.roundInfo || ""
+        howto: block.howto || "", image: block.image || "", roundInfo: block.roundInfo || ""
       });
       rest(block.restAfter, { section: section, name: "Rest", hold: true, upcoming: "" });
 
@@ -85,7 +85,7 @@ function buildSteps(day) {
           timed: block.mode === "time",
           seconds: block.mode === "time" ? block.work : 0,
           reps: block.reps || "", weight: block.weight || "",
-          notes: block.notes || "", image: block.image || "",
+          notes: block.notes || "", howto: block.howto || "", image: block.image || "",
           roundInfo: sets > 1 ? ("Set " + s + " of " + sets) : ""
         });
         if (s < sets) rest(block.rest, { section: section, name: "Rest", hold: block.rest >= 60 });
@@ -118,12 +118,18 @@ function buildSteps(day) {
             section: section, name: set.label,
             mode: set.stopwatch ? "stopwatch" : "reps",
             timed: false, stopwatch: !!set.stopwatch, targetSec: set.targetSec || null,
+            autoStart: !!set.autoStart, restRatio: set.restRatio || null,
             seconds: 0,
             reps: reps > 1 ? ("Rep " + rep + " of " + reps) : "",
             weight: "", notes: set.notes || (block.notes || ""),
             roundInfo: "Set " + (si + 1) + " of " + block.sets.length + (set.target ? (" · target " + set.target) : "")
           });
-          if (rep < reps) rest(set.interRepRest, { section: section, name: "Rest", hold: false });
+          if (rep < reps) {
+            // A dynamic rest (restRatio) gets its length from your sprint time
+            // at runtime; give it a placeholder so it isn't skipped as zero.
+            const irr = set.restRatio ? (set.interRepRest || 5) : set.interRepRest;
+            rest(irr, { section: section, name: "Rest", hold: false, dynamic: !!set.restRatio });
+          }
         }
         if (si < block.sets.length - 1) {
           const between = set.restAfter != null ? set.restAfter : block.restBetweenSets;
@@ -178,7 +184,12 @@ function WorkoutEngine(day, hooks) {
     if (step.kind === "rest") {
       remaining = step.seconds; beginCountdown();
     } else if (step.stopwatch) {
-      running = false; remaining = 0; stopTicker();   // wait for "Go", then count up
+      if (step.autoStart) {                            // sprints: start timing immediately
+        swActive = true; swElapsed = 0; swTargetHit = false;
+        swStartAt = Date.now(); startTicker();
+      } else {
+        running = false; remaining = 0; stopTicker();   // wait for "Go" (e.g. Super Shuttle)
+      }
     } else if (step.timed) {
       remaining = step.seconds; beginCountdown();
     } else {
@@ -285,7 +296,15 @@ function WorkoutEngine(day, hooks) {
         swActive = true; swElapsed = 0; swTargetHit = false; paused = false;
         swStartAt = Date.now(); startTicker(); emit();
       } else {                               // "Done" — stop and move on
-        swActive = false; stopTicker(); onCue("workEnd"); enterStep(stepIndex + 1);
+        swActive = false; stopTicker(); onCue("workEnd");
+        // Performance-based recovery: set the next rest from how long that took.
+        if (step.restRatio) {
+          const nxt = steps[stepIndex + 1];
+          if (nxt && nxt.kind === "rest" && nxt.dynamic) {
+            nxt.seconds = Math.max(3, Math.round(swElapsed * step.restRatio));
+          }
+        }
+        enterStep(stepIndex + 1);
       }
       return;
     }
@@ -310,6 +329,18 @@ function WorkoutEngine(day, hooks) {
     if (startedAt === null) startedAt = Date.now();
     enterStep(i);
   }
+  // Jump past the rest of the current section to the next one.
+  function skipSection() {
+    if (finished) return;
+    const curSection = stepIndex >= 0 && steps[stepIndex]
+      ? steps[stepIndex].section
+      : (steps[0] ? steps[0].section : "");
+    let i = stepIndex < 0 ? 0 : stepIndex + 1;
+    while (i < steps.length && steps[i].section === curSection) i++;
+    stopTicker(); running = false; swActive = false; finished = false;
+    if (startedAt === null) startedAt = Date.now();
+    enterStep(i);   // i may equal steps.length -> finishes the workout
+  }
   function getSteps() {
     return steps.map(function (s, i) {
       return { index: i, kind: s.kind, name: s.name, section: s.section, roundInfo: s.roundInfo || "", stopwatch: !!s.stopwatch };
@@ -319,7 +350,7 @@ function WorkoutEngine(day, hooks) {
 
   return {
     start: start, togglePause: togglePause, advance: advance, addTime: addTime,
-    next: next, prev: prev, goTo: goTo, getSteps: getSteps, stop: stop, snapshot: snapshot,
+    next: next, prev: prev, goTo: goTo, skipSection: skipSection, getSteps: getSteps, stop: stop, snapshot: snapshot,
     hasSteps: function () { return steps.length > 0; }
   };
 }

@@ -10,7 +10,7 @@
    put it online), not when opened as a local file.
    ========================================================================= */
 
-const CACHE = "trainer-v2";
+const CACHE = "trainer-v3";
 const FILES = [
   "index.html",
   "css/styles.css",

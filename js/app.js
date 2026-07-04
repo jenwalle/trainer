@@ -277,26 +277,28 @@ function renderStepContent(snap) {
   }
 }
 
-/* ---------- Weight box (for "choose weight" exercises) ---------- */
-function isChooseWeight(w) {
+/* ---------- Weight box ---------- */
+// Any exercise that uses external load gets an editable, remembered weight
+// box. Pure bodyweight moves just show a label (no box).
+function usesLoad(w) {
   if (!w) return false;
-  const s = w.toLowerCase();
-  return s.indexOf("choose") !== -1 || s.indexOf("your choice") !== -1;
+  const s = w.toLowerCase().trim();
+  return !(s === "bodyweight" || s === "bw" || s === "body only");
 }
 function baseExerciseName(name) { return name.replace(/ — (Right|Left)$/, ""); }
 
 function renderWeight(step, targetEl) {
-  if (isChooseWeight(step.weight)) {
+  if (usesLoad(step.weight)) {
     const nm = baseExerciseName(step.name);
     const saved = Storage.getWeight(nm);
     targetEl.innerHTML =
       '🏋️ <input class="weight-input" id="weight-input" type="text" inputmode="decimal" ' +
-      'placeholder="add weight" value="' + saved.replace(/"/g, "&quot;") + '">' +
-      (saved ? "" : ' <span class="subtle">your choice</span>');
+      'placeholder="add weight" value="' + saved.replace(/"/g, "&quot;") + '"> ' +
+      '<span class="subtle weight-hint">' + escapeHtml(step.weight) + '</span>';
     const input = $("weight-input");
     input.addEventListener("input", function () { Storage.saveWeight(nm, input.value.trim()); });
   } else if (step.weight) {
-    targetEl.textContent = "🏋️ " + step.weight;
+    targetEl.textContent = step.weight;   // "bodyweight" etc.
   }
 }
 
@@ -321,6 +323,7 @@ function toggleReminder() {
   if (step.image) html += '<img class="reminder-img" src="' + escapeHtml(step.image) + '" alt="' + escapeHtml(step.name) + '">';
   const desc = runDescription(step.name);
   if (desc) html += '<div class="reminder-desc">' + escapeHtml(desc) + "</div>";
+  if (step.howto) html += '<div class="reminder-howto">' + escapeHtml(step.howto) + "</div>";
   if (step.notes) html += '<div class="reminder-cues">💡 ' + escapeHtml(step.notes) + "</div>";
   const q = encodeURIComponent(nm + " exercise how to");
   html += '<a class="reminder-link" href="https://www.youtube.com/results?search_query=' + q +
@@ -385,6 +388,10 @@ function updateControls(snap) {
   prev.disabled = (snap.phase === "idle");
   skip.disabled = (snap.phase === "idle" || snap.phase === "done");
 
+  // "Skip the rest of this section" only during an active workout.
+  const active = snap.phase === "work" || snap.phase === "rest";
+  if (active) show($("btn-skip-section")); else hide($("btn-skip-section"));
+
   // Pause available during a countdown OR a running stopwatch.
   const swActiveNow = snap.stopwatch && snap.swActive;
   const hasCountdown = (snap.running || snap.paused) && !snap.awaiting;
@@ -429,6 +436,7 @@ $("btn-pause").addEventListener("click", function () { if (engine) engine.toggle
 $("btn-add").addEventListener("click",   function () { if (engine) engine.addTime(30); });
 $("btn-skip").addEventListener("click",  function () { if (engine) engine.next(); });
 $("btn-prev").addEventListener("click",  function () { if (engine) engine.prev(); });
+$("btn-skip-section").addEventListener("click", function () { if (engine) engine.skipSection(); });
 
 $("run-quit").addEventListener("click", function () {
   const done = state && state.phase === "done";
