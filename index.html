@@ -49,40 +49,44 @@
     <!-- Tap to jump to any part of the workout (no numeric counter). -->
     <button class="jump-btn" id="btn-jump">☰ Steps — tap to jump</button>
 
-    <!-- The big central card: what you're doing right now. -->
-    <div class="stage" id="run-stage">
-      <div class="section-chip" id="run-section"></div>
-      <div class="phase-label" id="run-phase">Get ready</div>
-      <div class="exercise-name" id="run-exercise">—</div>
-      <div class="set-line" id="run-set">—</div>
+    <!-- Scrollable content: the stage card, reminder, and up-next -->
+    <div class="run-scroll">
+      <div class="stage" id="run-stage">
+        <div class="section-chip" id="run-section"></div>
+        <div class="phase-label" id="run-phase">Get ready</div>
+        <div class="exercise-name" id="run-exercise">—</div>
+        <div class="set-line" id="run-set">—</div>
 
-      <!-- A demo photo of the movement (shown when we have one). -->
-      <img id="run-demo" class="demo-img hidden" alt="" />
+        <!-- A demo photo of the movement (shown when we have one). -->
+        <img id="run-demo" class="demo-img hidden" alt="" />
 
-      <!-- The giant countdown / status number. -->
-      <div class="big-timer" id="run-timer">00:00</div>
+        <!-- The giant countdown / status number. -->
+        <div class="big-timer" id="run-timer">00:00</div>
 
-      <div class="target-line" id="run-target"></div>
-      <div class="notes-line" id="run-notes"></div>
+        <div class="target-line" id="run-target"></div>
+        <div class="notes-line" id="run-notes"></div>
+      </div>
+
+      <button class="ghost-btn wide" id="btn-reminder">ℹ️ Need a reminder</button>
+      <div class="reminder-panel hidden" id="reminder-panel"></div>
+
+      <!-- "Up next" preview so you know what's coming. -->
+      <p class="subtle up-next" id="run-upnext"></p>
     </div>
 
-    <!-- Controls -->
-    <div class="controls">
-      <button class="ctrl-btn secondary" id="btn-prev">⏮ Prev</button>
-      <button class="ctrl-btn primary" id="btn-main">Start</button>
-      <button class="ctrl-btn secondary" id="btn-skip">Skip ⏭</button>
+    <!-- Fixed bottom controls — always in the same spot so taps land the same -->
+    <div class="run-bottom">
+      <div class="controls">
+        <button class="ctrl-btn secondary" id="btn-prev">⏮ Prev</button>
+        <button class="ctrl-btn primary" id="btn-main">Start</button>
+        <button class="ctrl-btn secondary" id="btn-skip">Skip ⏭</button>
+      </div>
+      <div class="secondary-controls">
+        <button class="ghost-btn" id="btn-pause">⏸ Pause</button>
+        <button class="ghost-btn" id="btn-add">＋30s rest</button>
+      </div>
+      <button class="ghost-btn wide" id="btn-skip-section">⏭ Skip the rest of this section</button>
     </div>
-    <div class="secondary-controls">
-      <button class="ghost-btn" id="btn-pause">⏸ Pause</button>
-      <button class="ghost-btn" id="btn-add">＋30s rest</button>
-    </div>
-
-    <button class="ghost-btn wide" id="btn-reminder">ℹ️ Need a reminder</button>
-    <button class="ghost-btn wide" id="btn-skip-section">⏭ Skip the rest of this section</button>
-    <div class="reminder-panel hidden" id="reminder-panel"></div>
-
-    <!-- "Up next" preview so you know what's coming. -->
-    <p class="subtle up-next" id="run-upnext"></p>
 
     <!-- Step selector overlay (jump to a different part of the workout). -->
     <div class="overlay hidden" id="jump-overlay">

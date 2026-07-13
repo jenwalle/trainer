@@ -113,7 +113,15 @@ html, body {
 .target-line { font-size: 18px; margin-top: 4px; }
 .notes-line { color: var(--muted); font-size: 15px; margin-top: 10px; line-height: 1.4; }
 
-/* ---------- Controls ---------- */
+/* ---------- Controls: fixed bottom bar (consistent tap positions) ---------- */
+#screen-run { padding-bottom: 214px; }   /* clear the fixed control bar */
+.run-bottom {
+  position: fixed; left: 50%; transform: translateX(-50%); bottom: 0;
+  width: 100%; max-width: 560px; z-index: 30;
+  padding: 10px 16px calc(12px + env(safe-area-inset-bottom));
+  background: var(--bg); border-top: 1px solid var(--card-2);
+}
+.run-bottom #btn-skip-section { margin-top: 10px; }
 .controls { display: grid; grid-template-columns: 1fr 1.4fr 1fr; gap: 10px; }
 .ctrl-btn {
   border: none; border-radius: 14px; padding: 18px 10px; font-size: 16px;

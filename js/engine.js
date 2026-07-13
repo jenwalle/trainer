@@ -46,16 +46,22 @@ function buildSteps(day) {
 
   // Emit the work step(s) for one exercise. If it's a TIMED "each side"
   // exercise, split it into a Right timer then a Left timer.
-  function emitExerciseWork(ex, section, blockName, roundInfo) {
+  function emitExerciseWork(ex, section, blockName, roundInfo, roundNum, roundTotal) {
     const timed = ex.mode === "time";
     const base = {
       section: section, blockName: blockName || "", mode: ex.mode,
       reps: ex.reps || "", weight: ex.weight || "", notes: ex.notes || "",
       howto: ex.howto || "", image: ex.image || "", roundInfo: roundInfo,
+      fixedWeight: !!ex.fixedWeight,
       timed: timed, seconds: timed ? ex.work : 0
     };
-    if (ex.perSide) {
-      // The app runs each side for you: Right, then Left (no "2R 2L" jargon).
+    if (ex.sideByRound && roundNum) {
+      // One side PER ROUND: first half of rounds = Right, second half = Left
+      // (e.g. 4 rounds -> R,R,L,L; 2 rounds -> R,L).
+      const side = roundNum <= Math.ceil(roundTotal / 2) ? "Right" : "Left";
+      work(Object.assign({}, base, { name: ex.name + " — " + side }));
+    } else if (ex.perSide) {
+      // BOTH sides within the round: Right, then Left (no "2R 2L" jargon).
       work(Object.assign({}, base, { name: ex.name + " — Right" }));
       work(Object.assign({}, base, { name: ex.name + " — Left" }));
     } else {
@@ -100,7 +106,7 @@ function buildSteps(day) {
       for (let r = 1; r <= rounds; r++) {
         exs.forEach(function (ex, i) {
           const roundInfo = (block.name ? block.name + " · " : "") + "Round " + r + " of " + rounds;
-          emitExerciseWork(ex, section, block.name, roundInfo);
+          emitExerciseWork(ex, section, block.name, roundInfo, r, rounds);
           if (i < exs.length - 1) rest(rBetween, { section: section, name: "Switch", hold: false });
         });
         if (r < rounds) rest(rRound, { section: section, name: "Rest", hold: true });
@@ -133,7 +139,8 @@ function buildSteps(day) {
         }
         if (si < block.sets.length - 1) {
           const between = set.restAfter != null ? set.restAfter : block.restBetweenSets;
-          rest(between, { section: section, name: "Rest", hold: true });
+          // Auto-advance between sets so the next sprint's timer starts on its own.
+          rest(between, { section: section, name: "Rest", hold: false });
         }
       });
       rest(block.restAfter, { section: section, name: "Rest", hold: true });

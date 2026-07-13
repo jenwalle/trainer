@@ -288,7 +288,12 @@ function usesLoad(w) {
 function baseExerciseName(name) { return name.replace(/ — (Right|Left)$/, ""); }
 
 function renderWeight(step, targetEl) {
-  if (usesLoad(step.weight)) {
+  // Warm-up / stretch / cool-down never get a weight box; neither do exercises
+  // with a fixed prescribed weight (e.g. the Ts at 8 lb, swiss-ball at 10 lb).
+  const noSlot = step.section === "Warm-up" || step.section === "Stretch" || step.section === "Cool-down";
+  const isLoad = usesLoad(step.weight);
+
+  if (isLoad && !step.fixedWeight && !noSlot) {
     const nm = baseExerciseName(step.name);
     const saved = Storage.getWeight(nm);
     targetEl.innerHTML =
@@ -297,8 +302,8 @@ function renderWeight(step, targetEl) {
       '<span class="subtle weight-hint">' + escapeHtml(step.weight) + '</span>';
     const input = $("weight-input");
     input.addEventListener("input", function () { Storage.saveWeight(nm, input.value.trim()); });
-  } else if (step.weight) {
-    targetEl.textContent = step.weight;   // "bodyweight" etc.
+  } else if (step.weight && step.weight.toLowerCase() !== "bodyweight") {
+    targetEl.textContent = (isLoad && !noSlot ? "🏋️ " : "") + step.weight;
   }
 }
 
