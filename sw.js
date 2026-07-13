@@ -10,7 +10,7 @@
    put it online), not when opened as a local file.
    ========================================================================= */
 
-const CACHE = "trainer-v3";
+const CACHE = "trainer-v4";
 const FILES = [
   "index.html",
   "css/styles.css",
@@ -39,11 +39,31 @@ self.addEventListener("activate", function (event) {
   self.clients.claim();
 });
 
-// On every request: serve from cache first, otherwise fetch from the network
-// AND stash a copy in the cache — so exercise photos you view once are then
-// available offline at the gym.
+// Fetch strategy:
+//   • App CODE (html/js/css/manifest) → NETWORK-FIRST, so you always get the
+//     latest version when you have signal; falls back to cache when offline.
+//   • Photos & everything else → CACHE-FIRST (they rarely change and are big),
+//     fetched once then available offline at the gym.
+function isCode(url) {
+  return /\.(html|js|css|webmanifest)$/.test(url) || url.endsWith("/");
+}
 self.addEventListener("fetch", function (event) {
   if (event.request.method !== "GET") return;
+  const url = new URL(event.request.url);
+
+  if (isCode(url.pathname)) {
+    event.respondWith(
+      fetch(event.request).then(function (resp) {
+        if (resp && resp.status === 200 && resp.type === "basic") {
+          const copy = resp.clone();
+          caches.open(CACHE).then(function (c) { c.put(event.request, copy); });
+        }
+        return resp;
+      }).catch(function () { return caches.match(event.request); })
+    );
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then(function (cached) {
       if (cached) return cached;
