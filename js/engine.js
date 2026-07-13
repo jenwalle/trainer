@@ -35,13 +35,14 @@ function buildSteps(day) {
   const steps = [];
 
   // Helper to push a work step.
+  let curBlockId = 0;   // which block (group) the current steps belong to
   function work(opts) {
-    steps.push(Object.assign({ kind: "work" }, opts));
+    steps.push(Object.assign({ kind: "work", blockId: curBlockId }, opts));
   }
   // Helper to push a rest step (skips zero-length rests).
   function rest(seconds, opts) {
     if (!seconds || seconds <= 0) return;
-    steps.push(Object.assign({ kind: "rest", seconds: seconds }, opts || {}));
+    steps.push(Object.assign({ kind: "rest", seconds: seconds, blockId: curBlockId }, opts || {}));
   }
 
   // Emit the work step(s) for one exercise. If it's a TIMED "each side"
@@ -69,14 +70,16 @@ function buildSteps(day) {
     }
   }
 
-  day.blocks.forEach(function (block) {
+  day.blocks.forEach(function (block, __bi) {
+    curBlockId = __bi;
     const section = block.section || "";
 
     if (block.type === "timed") {
-      // One timed effort (warm-up, cooper run, ball work…).
+      // One timed effort (warm-up, cooper run, ball work…). manualStart waits
+      // for a "Go" tap (e.g. the Cooper Run) instead of counting down on entry.
       work({
         section: section, name: block.name, mode: "time",
-        timed: true, seconds: block.work,
+        timed: true, seconds: block.work, manualStart: !!block.manualStart,
         weight: block.weight || "", notes: block.notes || "",
         howto: block.howto || "", image: block.image || "", roundInfo: block.roundInfo || ""
       });
@@ -139,8 +142,8 @@ function buildSteps(day) {
         }
         if (si < block.sets.length - 1) {
           const between = set.restAfter != null ? set.restAfter : block.restBetweenSets;
-          // Auto-advance between sets so the next sprint's timer starts on its own.
-          rest(between, { section: section, name: "Rest", hold: false });
+          // Auto-advance between sets; dynamic if this set scales rest by time.
+          rest(between || (set.restRatio ? 5 : 0), { section: section, name: "Rest", hold: false, dynamic: !!set.restRatio });
         }
       });
       rest(block.restAfter, { section: section, name: "Rest", hold: true });
@@ -171,6 +174,7 @@ function WorkoutEngine(day, hooks) {
   let swElapsed = 0;        // seconds counted so far
   let swStartAt = null;     // timestamp the count began (adjusted on resume)
   let swTargetHit = false;  // have we crossed the target time yet
+  let pendingStart = false; // a manual-start countdown is waiting for "Go"
 
   function currentStep() {
     return stepIndex >= 0 && stepIndex < steps.length ? steps[stepIndex] : null;
@@ -180,7 +184,7 @@ function WorkoutEngine(day, hooks) {
     stepIndex = index;
     paused = false;
     awaiting = false;
-    swActive = false; swElapsed = 0; swTargetHit = false;
+    swActive = false; swElapsed = 0; swTargetHit = false; pendingStart = false;
 
     if (index >= steps.length) {
       finished = true; running = false; stopTicker();
@@ -198,7 +202,9 @@ function WorkoutEngine(day, hooks) {
         running = false; remaining = 0; stopTicker();   // wait for "Go" (e.g. Super Shuttle)
       }
     } else if (step.timed) {
-      remaining = step.seconds; beginCountdown();
+      remaining = step.seconds;
+      if (step.manualStart) { running = false; pendingStart = true; stopTicker(); }
+      else beginCountdown();
     } else {
       running = false; remaining = 0; stopTicker();   // reps: wait for the user
     }
@@ -261,6 +267,7 @@ function WorkoutEngine(day, hooks) {
     return {
       phase: finished ? "done" : (step ? step.kind : "idle"),
       finished: finished, paused: paused, running: running, awaiting: awaiting,
+      pendingStart: pendingStart,
       remaining: remaining,
       step: step,
       section: step ? step.section : "",
@@ -298,6 +305,9 @@ function WorkoutEngine(day, hooks) {
   function advance() {
     const step = currentStep();
     if (awaiting) { enterStep(stepIndex + 1); return; }
+    if (step && step.timed && pendingStart) {   // "Go" on a manual-start countdown
+      pendingStart = false; beginCountdown(); emit(); return;
+    }
     if (step && step.stopwatch) {
       if (!swActive) {                       // "Go" — start counting up
         swActive = true; swElapsed = 0; swTargetHit = false; paused = false;
@@ -330,13 +340,31 @@ function WorkoutEngine(day, hooks) {
     if (stepIndex <= 0) { enterStep(0); return; }
     stopTicker(); running = false; swActive = false; finished = false; enterStep(stepIndex - 1);
   }
-  function goTo(i) {
-    if (i < 0 || i >= steps.length) return;
-    stopTicker(); running = false; swActive = false; finished = false;
+  function jumpTo(i) {   // reset transient state and enter step i (i may == length -> finish)
+    stopTicker(); running = false; swActive = false; pendingStart = false; finished = false;
     if (startedAt === null) startedAt = Date.now();
     enterStep(i);
   }
-  // Jump past the rest of the current section to the next one.
+  function goTo(i) { if (i >= 0 && i < steps.length) jumpTo(i); }
+
+  // Three skip levels the buttons expose:
+  // Skip the current SET → jump to the next work step.
+  function skipSet() {
+    if (finished) return;
+    let i = stepIndex + 1;
+    while (i < steps.length && steps[i].kind !== "work") i++;
+    jumpTo(i);
+  }
+  // Skip the current GROUP (circuit/block) → jump to the next block.
+  function skipGroup() {
+    if (finished) return;
+    const cur = currentStep();
+    const bid = cur ? cur.blockId : (steps[0] ? steps[0].blockId : 0);
+    let i = stepIndex < 0 ? 0 : stepIndex + 1;
+    while (i < steps.length && steps[i].blockId === bid) i++;
+    jumpTo(i);
+  }
+  // Skip the current SECTION → jump to the next section.
   function skipSection() {
     if (finished) return;
     const curSection = stepIndex >= 0 && steps[stepIndex]
@@ -344,9 +372,7 @@ function WorkoutEngine(day, hooks) {
       : (steps[0] ? steps[0].section : "");
     let i = stepIndex < 0 ? 0 : stepIndex + 1;
     while (i < steps.length && steps[i].section === curSection) i++;
-    stopTicker(); running = false; swActive = false; finished = false;
-    if (startedAt === null) startedAt = Date.now();
-    enterStep(i);   // i may equal steps.length -> finishes the workout
+    jumpTo(i);
   }
   function getSteps() {
     return steps.map(function (s, i) {
@@ -357,7 +383,9 @@ function WorkoutEngine(day, hooks) {
 
   return {
     start: start, togglePause: togglePause, advance: advance, addTime: addTime,
-    next: next, prev: prev, goTo: goTo, skipSection: skipSection, getSteps: getSteps, stop: stop, snapshot: snapshot,
+    next: next, prev: prev, goTo: goTo,
+    skipSet: skipSet, skipGroup: skipGroup, skipSection: skipSection,
+    getSteps: getSteps, stop: stop, snapshot: snapshot,
     hasSteps: function () { return steps.length > 0; }
   };
 }

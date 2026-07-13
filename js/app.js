@@ -223,7 +223,7 @@ function renderRun(snap) {
     timerEl.textContent = snap.swActive ? fmt(snap.swElapsed) : "00:00";
     if (snap.overTarget) timerEl.classList.add("over");
   } else {
-    phaseEl.textContent = snap.paused ? "Work (paused)" : "Work";
+    phaseEl.textContent = snap.pendingStart ? "Ready" : (snap.paused ? "Work (paused)" : "Work");
     timerEl.textContent = step.timed ? fmt(snap.remaining) : (step.reps ? step.reps : "Go!");
   }
 
@@ -393,9 +393,10 @@ function updateControls(snap) {
   prev.disabled = (snap.phase === "idle");
   skip.disabled = (snap.phase === "idle" || snap.phase === "done");
 
-  // "Skip the rest of this section" only during an active workout.
+  // Skip group / section only during an active workout.
   const active = snap.phase === "work" || snap.phase === "rest";
-  if (active) show($("btn-skip-section")); else hide($("btn-skip-section"));
+  if (active) { show($("btn-skip-group")); show($("btn-skip-section")); }
+  else { hide($("btn-skip-group")); hide($("btn-skip-section")); }
 
   // Pause available during a countdown OR a running stopwatch.
   const swActiveNow = snap.stopwatch && snap.swActive;
@@ -417,6 +418,8 @@ function updateControls(snap) {
     main.textContent = "✓ Save & finish"; main.className = "ctrl-btn primary";
   } else if (snap.awaiting) {
     main.textContent = "▶ Start next"; main.className = "ctrl-btn primary";
+  } else if (snap.pendingStart) {
+    main.textContent = "▶ Go"; main.className = "ctrl-btn primary";
   } else if (snap.stopwatch) {
     main.textContent = snap.swActive ? "Done ✓" : "▶ Go";
     main.className = "ctrl-btn primary";
@@ -435,12 +438,14 @@ $("btn-main").addEventListener("click", function () {
   if (state.phase === "idle")       engine.start();
   else if (state.phase === "done")  finishWorkout();
   else if (state.awaiting)          engine.advance();   // continue after a hold-rest
+  else if (state.pendingStart)      engine.advance();   // "Go" on a manual-start countdown
   else if (state.phase === "work" && state.step && !state.step.timed) engine.advance();
 });
 $("btn-pause").addEventListener("click", function () { if (engine) engine.togglePause(); });
 $("btn-add").addEventListener("click",   function () { if (engine) engine.addTime(30); });
-$("btn-skip").addEventListener("click",  function () { if (engine) engine.next(); });
+$("btn-skip").addEventListener("click",  function () { if (engine) engine.skipSet(); });
 $("btn-prev").addEventListener("click",  function () { if (engine) engine.prev(); });
+$("btn-skip-group").addEventListener("click", function () { if (engine) engine.skipGroup(); });
 $("btn-skip-section").addEventListener("click", function () { if (engine) engine.skipSection(); });
 
 $("run-quit").addEventListener("click", function () {

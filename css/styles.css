@@ -121,7 +121,8 @@ html, body {
   padding: 10px 16px calc(12px + env(safe-area-inset-bottom));
   background: var(--bg); border-top: 1px solid var(--card-2);
 }
-.run-bottom #btn-skip-section { margin-top: 10px; }
+.skip-row { display: flex; gap: 10px; margin-top: 10px; }
+.skip-row .ghost-btn { flex: 1; }
 .controls { display: grid; grid-template-columns: 1fr 1.4fr 1fr; gap: 10px; }
 .ctrl-btn {
   border: none; border-radius: 14px; padding: 18px 10px; font-size: 16px;

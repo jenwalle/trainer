@@ -44,13 +44,27 @@ function stretch(section) {
     restBetweenExercises: 0, restAfterRound: 0, restAfter: section === "Stretch" ? 20 : 0,
     exercises: [
       { name: "Band seated calf stretch", mode: "time", work: 30, weight: "band", notes: "Hold ~5 slow breaths.", howto: "Sit tall with one leg straight out in front. Loop a band (or towel) around the ball of that foot and gently pull it toward you so your toes come back and you feel a stretch through your calf and Achilles. Keep the knee straight, breathe slowly, and ease a little deeper on each exhale." },
-      { name: "Band supine hamstring stretch", mode: "time", work: 30, weight: "band", notes: "Hold ~5 slow breaths." },
-      { name: "Band supine groin stretch", mode: "time", work: 30, weight: "band", notes: "Hold ~5 slow breaths." },
-      { name: "Band supine glute stretch", mode: "time", work: 30, weight: "band", notes: "Hold ~5 slow breaths." },
-      { name: "Supine torso crossover", mode: "time", work: 30, weight: "bodyweight", notes: "Hold ~5 slow breaths." },
+      { name: "Band supine hamstring stretch", mode: "time", work: 30, weight: "band", notes: "Hold ~5 slow breaths.", howto: "Lie on your back. Loop a band around one foot and raise that leg toward the ceiling, keeping the knee mostly straight, until you feel a stretch up the back of the thigh. Keep the other leg flat and relaxed; ease deeper on each exhale." },
+      { name: "Band supine groin stretch", mode: "time", work: 30, weight: "band", notes: "Hold ~5 slow breaths.", howto: "Lie on your back with the band around one foot. Let that leg open out to the side (toward the floor) with a slight knee bend until you feel a stretch through the inner thigh/groin. Keep your hips flat and controlled." },
+      { name: "Band supine glute stretch", mode: "time", work: 30, weight: "band", notes: "Hold ~5 slow breaths.", howto: "Lie on your back with the band around one foot. Pull that knee up and across your body toward the opposite shoulder until you feel a stretch deep in the glute. Keep your shoulders down on the floor." },
+      { name: "Supine torso crossover", mode: "time", work: 30, weight: "bodyweight", notes: "Hold ~5 slow breaths.", howto: "Lie on your back, arms out in a T. Bring one knee up and let it fall across your body toward the floor on the opposite side, turning your head the other way. Keep both shoulders on the ground for a gentle spinal twist through your low back and obliques." },
       { name: "Supine superman stretch", mode: "time", work: 30, weight: "bodyweight", notes: "Hold ~5 slow breaths; breathe into the stretch.", howto: "Lie flat on your back and reach your arms straight overhead on the floor while pointing your toes away from you — like a 'superman' but face-up. Reach your hands and feet in opposite directions to lengthen your whole front body (shoulders, chest, abs, hip flexors). Keep your low back gently on the floor and breathe slowly, letting the stretch deepen on each exhale for about 5 breaths. Tap 'Watch a demo' for a visual." }
     ]
   };
+}
+
+// Cool-down = Hip ROM mobility + the flexibility stretches ("See Hip ROM & Flex").
+// Every day ends with this.
+function cooldown() {
+  const s = stretch("Cool-down");
+  s.name = "Hip ROM & Flexibility";
+  s.rounds = 1;
+  s.exercises = [
+    { name: "Side to side squat", mode: "reps", reps: "10", weight: "bodyweight", howto: "Easy, controlled hip mobility: feet wide, shift side to side sitting into each hip. Lean from the hips (not the low back), keeping the chest tall — loosening the hips after your session." },
+    { name: "Lunge matrix", mode: "reps", reps: "5 each direction", weight: "bodyweight", howto: "Step into a lunge straight ahead, then diagonally, then out to the side, returning to standing each time. Move slowly to open the hips in every direction." },
+    { name: "Rotational T", mode: "reps", reps: "5 each side", weight: "bodyweight", howto: "Balance on one leg and hinge forward, opening your torso into a 'T' and rotating through the hip, then return upright. Gentle and controlled to finish mobilizing the hips." }
+  ].concat(s.exercises);
+  return s;
 }
 
 // Hip-ROM strength (Forward/Lateral/Rotational Ts) — functional-power days.
@@ -73,17 +87,17 @@ function strengthW1() {
   return [
     { type: "circuit", section: "Strength", name: "Structure (Group 1)", rounds: 4,
       exercises: [
-        { name: "Squat w/ dumbbell to ground", image: "images/ex/goblet-squat.jpg", mode: "time", work: 60, weight: "choose weight", notes: "Slow and controlled.", howto: "Hold a dumbbell at your chest. Sit your hips back and down until the dumbbell nearly touches the ground between your feet, chest tall and back flat, then drive up through your heels. Move slow and controlled — quality over speed." },
+        { name: "Squat w/ dumbbell to ground", mode: "time", work: 60, weight: "choose weight", notes: "Slow and controlled.", howto: "Hold a dumbbell in both hands at your chest. Sit your hips back and down until the dumbbell nearly touches the ground between your feet, chest tall and back flat, then drive up through your heels. Move slow and controlled — quality over speed." },
         { name: "Tricep dips on bench", mode: "time", work: 60, weight: "bodyweight", notes: "Bend knees to make easier; straight legs to make harder.", howto: "Hands on the edge of a bench behind you, fingers forward. Lower your body by bending your elbows straight back (not flaring out) until your upper arms are about parallel to the floor, then press back up. Bend your knees to make it easier, straighten your legs to make it harder." }
       ] },
     { type: "circuit", section: "Strength", name: "Function (Group 2)", rounds: 4,
       exercises: [
         { name: "Skaters", mode: "time", work: 60, weight: "bodyweight", notes: "Perfect landing each rep." },
-        { name: "Snow angel on single leg", mode: "time", work: 60, weight: "choose weight", notes: "Slow & controlled, keep back flat. Split time each leg." }
+        { name: "Snow angel on single leg", mode: "time", work: 60, sideByRound: true, weight: "choose weight", notes: "Right leg for rounds 1–2, left leg for rounds 3–4.", howto: "Balance on one leg holding light dumbbells at your sides. Sweep both arms out and up overhead like making a snow angel, then back down, staying tall and steady on the standing leg. Slow and controlled, back flat. Right leg the first two rounds, left leg the last two." }
       ] },
     { type: "circuit", section: "Strength", name: "Realization (Group 3)", rounds: 4, restAfter: 60,
       exercises: [
-        { name: "Rotational T w/ db at sternum", mode: "reps", reps: "5", perSide: true, weight: "choose weight", notes: "Hold the dumbbell at your sternum.", howto: "Stand on one leg holding a dumbbell at your sternum. Hinge at the hips and rotate your torso, reaching into a 'T', then return to upright under control. The app runs your right side, then your left." },
+        { name: "Rotational T w/ db at sternum", mode: "reps", reps: "5", sideByRound: true, weight: "choose weight", notes: "Right leg for rounds 1–2, left leg for rounds 3–4.", howto: "Stand on one leg holding a dumbbell at your sternum. Hinge at the hips and rotate your torso, reaching into a 'T', then return to upright under control. Right leg the first two rounds (with squat jumps between), left leg the last two." },
         { name: "Lateral squat jumps", mode: "time", work: 60, weight: "bodyweight", notes: "Jump out to the side then back; don't let knees dive in.", howto: "From a quarter-squat, jump laterally to one side, land soft on the outside leg absorbing into a squat, then jump back to the other side. Keep your knees tracking over your toes — don't let them cave inward." }
       ] }
   ];
@@ -94,17 +108,17 @@ function strengthW3() {
   return [
     { type: "circuit", section: "Strength", name: "Base (Group 1)", rounds: 4,
       exercises: [
-        { name: "Sumo squat w/ extension", image: "images/ex/plie-squat.jpg", mode: "reps", reps: "5", perSide: true, weight: "2 dumbbells", notes: "Slow & controlled.", howto: "Take a wide 'sumo' stance, toes turned slightly out, holding a dumbbell in each hand. Squat straight down keeping your back flat and knees tracking over your toes. As you stand, lift one leg out to the side (abduct from the heel), then return. The app runs your right side, then your left." },
+        { name: "Sumo squat w/ extension", image: "images/ex/plie-squat.jpg", mode: "reps", reps: "5", sideByRound: true, weight: "2 dumbbells", notes: "One extension side per set.", howto: "Take a wide 'sumo' stance, toes turned slightly out, holding a dumbbell in each hand. Squat straight down keeping your back flat and knees tracking over your toes. As you stand, lift one leg out to the side (abduct from the heel), then return. One side per set — the app alternates the extension leg each set." },
         { name: "Break dancin' pushups", mode: "reps", reps: "10", weight: "2 dumbbells", notes: "Hips up even with spine, elbows in, exhale up, look at up hand, bring opposite leg through.", howto: "In a pushup position on dumbbells, lower your chest keeping elbows tucked. As you press up, rotate your hips and thread one leg underneath your body through to the other side (like a breakdance kick-through), looking at your top hand. Alternate sides each rep." }
       ] },
     { type: "circuit", section: "Strength", name: "Build (Group 2)", rounds: 4,
       exercises: [
         { name: "Walking lunge", image: "images/ex/dumbbell-lunges.jpg", mode: "reps", reps: "20 total (alternating)", weight: "1 dumbbell", notes: "Hold the db at your sternum. First 2 rounds twist toward the lead leg, last 2 rounds twist away.", howto: "Step forward into a lunge, both knees bending to about 90°, front heel planted and torso upright. As you lunge, rotate your torso 45° (toward the front leg for the first 2 rounds, away for the last 2). Push through the front heel to step directly into the next lunge. Alternate legs each step — 20 steps total." },
-        { name: 'Single-leg "L" shoulder flys', image: "images/ex/shoulder-fly.jpg", mode: "reps", reps: "10", perSide: true, weight: "2 dumbbells", notes: "Balance on one leg, knee even with or above your hip.", howto: "Balance on one leg with the other knee lifted to hip height. Holding light dumbbells, raise one arm straight out in front and the other straight out to the side (forming an 'L'), then lower and switch which arm goes front vs. side each rep. Stay tall and steady. The app runs one balancing leg, then the other." }
+        { name: 'Single-leg "L" shoulder flys', image: "images/ex/shoulder-fly.jpg", mode: "reps", reps: "10", sideByRound: true, weight: "2 dumbbells", notes: "One balancing leg per set.", howto: "Balance on one leg with the other knee lifted to hip height. Holding light dumbbells, raise one arm straight out in front and the other straight out to the side (forming an 'L'), then lower and switch which arm goes front vs. side each rep. Stay tall and steady. One balancing leg per set — the app alternates it each set." }
       ] },
     { type: "circuit", section: "Strength", name: "Explode (Group 3)", rounds: 4, restAfter: 60,
       exercises: [
-        { name: "Single-leg RDL to curl-press", image: "images/ex/rdl.jpg", mode: "reps", reps: "5", perSide: true, weight: "1 dumbbell", notes: "Dumbbell in the hand opposite the standing leg.", howto: "Balance on one leg holding a dumbbell in the opposite hand. Hinge at the hip (single-leg Romanian deadlift), letting the free leg extend straight back, keeping your back flat. Stand back up and flow into a bicep curl then an overhead press: palm faces forward at the start, faces you at the middle, and away at the top. The app runs one leg, then the other." },
+        { name: "Single-leg RDL to curl-press", image: "images/ex/rdl.jpg", mode: "reps", reps: "5", sideByRound: true, weight: "1 dumbbell", notes: "One standing leg per set.", howto: "Balance on one leg holding a dumbbell in the opposite hand. Hinge at the hip (single-leg Romanian deadlift), letting the free leg extend straight back, keeping your back flat. Stand back up and flow into a bicep curl then an overhead press: palm faces forward at the start, faces you at the middle, and away at the top. One standing leg per set — the app alternates it each set." },
         { name: "Squat jump", image: "images/ex/jump-squat.jpg", mode: "reps", reps: "20", weight: "bodyweight", notes: "Arms up when down, at sides in the air. Jump high, land soft.", howto: "Drop into a squat with your arms reaching up/overhead, then explode straight up as high as you can, bringing your arms down to your sides in the air. Land soft and quiet, absorbing straight back into the next squat." }
       ] }
   ];
@@ -177,7 +191,7 @@ function powerBig() {
         { name: "Side to side squats", mode: "reps", reps: "20", weight: "choose weight" },
         { name: "Lunge jumps", mode: "reps", reps: "20", weight: "bodyweight" },
         { name: "Ham curls on ball – single leg", image: "images/ex/ball-leg-curl.jpg", mode: "reps", reps: "12", perSide: true, weight: "bodyweight", howto: "Lie on your back, heels on a stability ball, hips lifted. With one leg (other lifted off the ball), curl the ball toward your butt using your hamstring, then extend back out. Keep your hips up the whole time. The app runs one leg, then the other." },
-        { name: "Forward T with weight", mode: "reps", reps: "6", perSide: true, weight: "choose weight", notes: "Dumbbell in the opposite hand as the down (standing) leg; keep it controllable.", howto: "Balance on one leg, holding a dumbbell in the hand opposite that standing leg. Hinge forward at the hip, reaching into a forward 'T' (torso and free leg forming a straight line), then return upright under control. The app runs 6 on the right, then 6 on the left." }
+        { name: "Forward T with weight", mode: "reps", reps: "6", sideByRound: true, weight: "choose weight", notes: "Dumbbell in the opposite hand as the down (standing) leg. One leg per set.", howto: "Balance on one leg, holding a dumbbell in the hand opposite that standing leg. Hinge forward at the hip, reaching into a forward 'T' (torso and free leg forming a straight line), then return upright under control. One leg per set — the app alternates the side each set." }
       ] },
     { type: "circuit", section: "Strength", name: "Round 2 · Group 4", rounds: 3,
       restBetweenExercises: 10, restAfterRound: 30, restAfter: 90,
@@ -287,25 +301,25 @@ function coreCrunch() {
 
 const RUN = {
   w1: { type: "interval", section: "Run", name: "Super Shuttles", restBetweenSets: 180,
-        notes: "Total 900 yds · rest:work 3:1", sets: [
-          { label: "300-yard Super Shuttle", reps: 1, stopwatch: true, targetSec: 60, target: "60 sec" },
-          { label: "300-yard Super Shuttle", reps: 1, stopwatch: true, targetSec: 60, target: "60 sec" },
-          { label: "300-yard Super Shuttle", reps: 1, target: "60 sec" } ] },
+        notes: "Total 900 yds · target 60 sec · recovery = 3× your time", sets: [
+          { label: "300-yard Super Shuttle", reps: 1, stopwatch: true, targetSec: 60, target: "60 sec", restRatio: 3 },
+          { label: "300-yard Super Shuttle", reps: 1, stopwatch: true, targetSec: 60, target: "60 sec", restRatio: 3 },
+          { label: "300-yard Super Shuttle", reps: 1, stopwatch: true, targetSec: 60, target: "60 sec", restRatio: 3 } ] },
 
   w2: { type: "interval", section: "Run", name: "Fartlek", restBetweenSets: 240,
-        notes: "Total 1320 yds · active recovery · sprint the sidelines, jog the endlines", sets: [
-          { label: "2 Fartlek laps", reps: 1, stopwatch: true, autoStart: true },
-          { label: "2 Fartlek laps", reps: 1, stopwatch: true, autoStart: true },
-          { label: "2 Fartlek laps", reps: 1, stopwatch: true, autoStart: true } ] },
+        notes: "Total 1320 yds · start the timer, sprint the sidelines, jog the endlines", sets: [
+          { label: "2 Fartlek laps", reps: 1, stopwatch: true },
+          { label: "2 Fartlek laps", reps: 1, stopwatch: true },
+          { label: "2 Fartlek laps", reps: 1, stopwatch: true } ] },
 
   w3: { type: "interval", section: "Run", name: "Down & Backs / Sprints", restBetweenSets: 120,
-        notes: "Total 1200 yds · recovery = half your rep time", sets: [
-          { label: "20-yard Down & Back", reps: 10, stopwatch: true, autoStart: true, restRatio: 0.5 },
-          { label: "40-yard Sprint", reps: 10, stopwatch: true, autoStart: true, restRatio: 0.5 },
-          { label: "20-yard Down & Back", reps: 10, stopwatch: true, autoStart: true, restRatio: 0.5 },
-          { label: "40-yard Sprint", reps: 10, stopwatch: true, autoStart: true, restRatio: 0.5 } ] },
+        notes: "Total 1200 yds · auto timer · 12/10 sec between reps", sets: [
+          { label: "20-yard Down & Back", reps: 10, stopwatch: true, autoStart: true, interRepRest: 12 },
+          { label: "40-yard Sprint", reps: 10, stopwatch: true, autoStart: true, interRepRest: 10 },
+          { label: "20-yard Down & Back", reps: 10, stopwatch: true, autoStart: true, interRepRest: 12 },
+          { label: "40-yard Sprint", reps: 10, stopwatch: true, autoStart: true, interRepRest: 10 } ] },
 
-  w4: { type: "timed", section: "Run", name: "Cooper Run", work: 720, notes: "Go to a track and run as far as you can for 12 minutes." },
+  w4: { type: "timed", section: "Run", name: "Cooper Run", work: 720, manualStart: true, notes: "Tap Go, then run as far as you can for 12 minutes." },
 
   w5: { type: "interval", section: "Run", name: "50-yard Sprints", restBetweenSets: 120,
         notes: "Total 1100 yds · recovery = your rep time (1:1)", sets: [
@@ -322,17 +336,17 @@ const RUN = {
           { label: "300-yard Super Shuttle", reps: 1, target: "60 sec" } ] },
 
   w7: { type: "interval", section: "Run", name: "Sprints / Down & Backs", restBetweenSets: 120,
-        notes: "Total 1500 yds · recovery = 3× your rep time (3:1)", sets: [
-          { label: "50-yard Sprint", reps: 10, stopwatch: true, autoStart: true, restRatio: 3, restAfter: 120 },
-          { label: "25-yard Down & Back", reps: 10, stopwatch: true, autoStart: true, restRatio: 3, restAfter: 180 },
-          { label: "50-yard Sprint", reps: 10, stopwatch: true, autoStart: true, restRatio: 3 } ] },
+        notes: "Total 1500 yds · auto timer · 18/21/18 sec between reps", sets: [
+          { label: "50-yard Sprint", reps: 10, stopwatch: true, autoStart: true, interRepRest: 18, restAfter: 120 },
+          { label: "25-yard Down & Back", reps: 10, stopwatch: true, autoStart: true, interRepRest: 21, restAfter: 180 },
+          { label: "50-yard Sprint", reps: 10, stopwatch: true, autoStart: true, interRepRest: 18 } ] },
 
   w8: { type: "interval", section: "Run", name: "Fartlek", restBetweenSets: 480,
-        notes: "Total 1400 yds · active recovery · sprint the sidelines, jog the endlines", sets: [
-          { label: "4 Fartlek laps", reps: 1, stopwatch: true, autoStart: true },
-          { label: "3 Fartlek laps", reps: 1, stopwatch: true, autoStart: true } ] },
+        notes: "Total 1400 yds · start the timer, sprint the sidelines, jog the endlines", sets: [
+          { label: "4 Fartlek laps", reps: 1, stopwatch: true },
+          { label: "3 Fartlek laps", reps: 1, stopwatch: true } ] },
 
-  w9: { type: "timed", section: "Run", name: "Cooper Run", work: 720, notes: "Go to a track and run as far as you can for 12 minutes." },
+  w9: { type: "timed", section: "Run", name: "Cooper Run", work: 720, manualStart: true, notes: "Tap Go, then run as far as you can for 12 minutes." },
 
   w10: { type: "interval", section: "Run", name: "50-yard Sprints", restBetweenSets: 120,
         notes: "Total ~1300 yds · target 7 sec/rep · 7 sec between reps · 2 min between sets", sets: [
@@ -378,7 +392,7 @@ function day(n, runBlock, middleBlocks) {
     name: "Workout #" + n,
     blocks: [ warmup(), stretch("Stretch"), runBlock ]
       .concat(middleBlocks)
-      .concat([ stretch("Cool-down") ])
+      .concat([ cooldown() ])
   };
 }
 

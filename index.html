@@ -79,13 +79,17 @@
       <div class="controls">
         <button class="ctrl-btn secondary" id="btn-prev">⏮ Prev</button>
         <button class="ctrl-btn primary" id="btn-main">Start</button>
-        <button class="ctrl-btn secondary" id="btn-skip">Skip ⏭</button>
+        <button class="ctrl-btn secondary" id="btn-skip">Skip set ⏭</button>
       </div>
       <div class="secondary-controls">
         <button class="ghost-btn" id="btn-pause">⏸ Pause</button>
         <button class="ghost-btn" id="btn-add">＋30s rest</button>
       </div>
-      <button class="ghost-btn wide" id="btn-skip-section">⏭ Skip the rest of this section</button>
+      <!-- Three skip levels: this set, this whole group, or this whole section -->
+      <div class="skip-row">
+        <button class="ghost-btn" id="btn-skip-group">Skip group</button>
+        <button class="ghost-btn" id="btn-skip-section">Skip section</button>
+      </div>
     </div>
 
     <!-- Step selector overlay (jump to a different part of the workout). -->
